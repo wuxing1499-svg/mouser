@@ -35,8 +35,17 @@ jobs:
 
       - name: Fetch submodules (full)
         run: |
+          # Full clone (no --depth) so the pinned deskflow commit can be
+          # checked out even if GitHub upload-pack rejects direct fetch.
+          # `git submodule update --init` defaults to --depth=1 which fails
+          # when the pinned commit is not a branch tip.
           git submodule sync --recursive
-          git submodule update --init --recursive
+          git clone https://github.com/deskflow/deskflow.git vendor/deskflow
+          # Extract pinned commit from `git submodule status` output:
+          #   " e1e22c8916f59a158c818d88a2cfb00139e11573 vendor/deskflow (v1.26.0-2-ge1e22c891)"
+          $pinned = (git submodule status vendor/deskflow)[0].Split(' ')[1]
+          Write-Host "Checking out deskflow @ $pinned"
+          git -C vendor/deskflow checkout $pinned
 
       - name: Setup Python 3.12
         uses: actions/setup-python@v5
