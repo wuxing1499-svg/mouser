@@ -11,8 +11,8 @@ __pycache__/
 venv/
 *.egg-info/
 
-# Vendor (Deskflow submodule will be added later)
-vendor/deskflow/
+# Vendor (Deskflow submodule — managed by git, do not ignore)
+# vendor/deskflow/ is a git submodule, tracked in .gitmodules
 
 # Worktrees
 .worktrees/

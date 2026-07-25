@@ -146,11 +146,11 @@ class MouserApp:
         assert self._tray is not None
         self._tray.set_state(TrayState.CONNECTING, "spawning daemon")
 
-        # daemon args: --server or --client (per spec D1)
-        mode_flag = "--server" if self._config.mode == "server" else "--client"
+        # daemon args: positional 'server' or 'client' (per spec D9 / deskflow-core --help)
+        mode_arg = "server" if self._config.mode == "server" else "client"
         self._daemon = DaemonProcess(
             binary_path=self._binary_path,
-            binary_args=[mode_flag],
+            binary_args=[mode_arg, "--new-instance"],
             on_message=self._on_daemon_message,
         )
         try:

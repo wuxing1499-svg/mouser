@@ -1,0 +1,3 @@
+[submodule "vendor/deskflow"]
+	path = vendor/deskflow
+	url = https://github.com/deskflow/deskflow.git
