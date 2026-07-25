@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Mouser tray icon — connected state. Green. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect x="22" y="8" width="20" height="48" rx="10" ry="10" fill="#10b981" stroke="#065f46" stroke-width="2"/>
+  <line x1="32" y1="8" x2="32" y2="28" stroke="#065f46" stroke-width="2"/>
+  <circle cx="32" cy="20" r="2" fill="#065f46"/>
+</svg>

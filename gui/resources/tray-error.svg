@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Mouser tray icon — error state. Red. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect x="22" y="8" width="20" height="48" rx="10" ry="10" fill="#ef4444" stroke="#7f1d1d" stroke-width="2"/>
+  <line x1="32" y1="8" x2="32" y2="28" stroke="#7f1d1d" stroke-width="2"/>
+  <circle cx="32" cy="20" r="2" fill="#7f1d1d"/>
+  <line x1="26" y1="38" x2="38" y2="50" stroke="#7f1d1d" stroke-width="3"/>
+  <line x1="38" y1="38" x2="26" y2="50" stroke="#7f1d1d" stroke-width="3"/>
+</svg>
