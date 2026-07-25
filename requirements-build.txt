@@ -1,0 +1,4 @@
+# Build-time dependencies (CI + local packaging)
+pyside6==6.7.3
+pyinstaller==6.11.1
+platformdirs==4.3.6

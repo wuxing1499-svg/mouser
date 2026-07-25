@@ -1,0 +1,52 @@
+{
+  "version": "1.0",
+  "description": "NDJSON IPC protocol between mouser GUI (Python) and deskflow-core daemon (C++). Each message is one JSON object per line. GUI writes to daemon stdin; daemon writes to stderr. See spec/mouser 'Integration layer' and plan/mouser 阶段 2.",
+  "messages": {
+    "Hello": {
+      "description": "Daemon -> GUI. Sent once on startup after process initialization.",
+      "fields": {
+        "version": "string  — protocol version (matches this schema's version)",
+        "pid": "int          — daemon process ID (for diagnostics)"
+      }
+    },
+    "Start": {
+      "description": "GUI -> Daemon. Instructs daemon to begin server or client operation with the given config.",
+      "fields": {
+        "mode": "string  — 'server' or 'client'",
+        "config": "object  — MouserConfig subset (port, local_host, screens)"
+      }
+    },
+    "Stop": {
+      "description": "GUI -> Daemon. Instructs daemon to cleanly shut down (equivalent to SIGTERM but cross-platform).",
+      "fields": {}
+    },
+    "Status": {
+      "description": "Daemon -> GUI. Emitted whenever connection state changes.",
+      "fields": {
+        "state": "string  — 'connecting' | 'connected' | 'disconnected'",
+        "detail": "string  — human-readable detail (e.g. peer hostname)"
+      }
+    },
+    "Error": {
+      "description": "Daemon -> GUI. Emitted on recoverable errors (e.g. Accessibility not granted, port in use).",
+      "fields": {
+        "code": "string    — machine-readable error code (e.g. 'ACCESSIBILITY_DENIED')",
+        "message": "string — human-readable error message"
+      }
+    },
+    "ClipboardUpdate": {
+      "description": "Daemon -> GUI. Emitted when clipboard text changes on the active screen (v1: plain text only).",
+      "fields": {
+        "text": "string  — clipboard text content"
+      }
+    },
+    "Ping": {
+      "description": "GUI -> Daemon. Heartbeat probe. GUI sends every 5s; 3 consecutive misses = daemon hung.",
+      "fields": {}
+    },
+    "Pong": {
+      "description": "Daemon -> GUI. Heartbeat response to Ping.",
+      "fields": {}
+    }
+  }
+}
