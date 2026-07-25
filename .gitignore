@@ -1,0 +1,33 @@
+# Build artifacts
+build/
+dist/
+*.o
+*.obj
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# Vendor (Deskflow submodule will be added later)
+vendor/deskflow/
+
+# Worktrees
+.worktrees/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# PyInstaller
+*.spec.user
+
+# Test
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
