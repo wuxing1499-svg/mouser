@@ -31,9 +31,16 @@ if "distpath" not in CONF:
     CONF["distpath"] = str(Path.cwd() / "dist")
 
 from PyInstaller.building.build_main import Analysis, COLLECT, EXE
+from PyInstaller.building.osx import BUNDLE
 from PyInstaller.utils.hooks import collect_data_files
 
-REPO_ROOT = Path(SPECPATH).resolve() if "SPECPATH" in dir() else Path(__file__).resolve().parent.parent
+# SPECPATH is the spec file's directory (packaging/), so parent is repo root.
+# When loaded via runpy for tests (no SPECPATH), fall back to __file__.
+REPO_ROOT = (
+    Path(SPECPATH).resolve().parent
+    if "SPECPATH" in dir()
+    else Path(__file__).resolve().parent.parent
+)
 
 # Locate the deskflow-core binary. CI builds it to build/bin/...; local dev
 # may have it elsewhere. We try multiple candidates.
@@ -150,5 +157,22 @@ coll = COLLECT(
     upx=False,
     upx_exclude=[],
     name="Mouser",
-    app_bundle=True,  # Produce Mouser.app/Contents/MacOS/Mouser
+    # Note: PyInstaller 6.x COLLECT does not support app_bundle=True.
+    # The .app bundle structure is created by BUNDLE below.
+)
+
+# BUNDLE reorganizes COLLECT contents into proper .app structure:
+#   Contents/MacOS/Mouser, Contents/Frameworks/*.dylib, Contents/Resources/*
+app = BUNDLE(
+    coll,
+    name="Mouser.app",
+    bundle_identifier="com.ndq.mouser",
+    info_plist={
+        "CFBundleDisplayName": "Mouser",
+        "CFBundleVersion": "1.0.0",
+        "CFBundleShortVersionString": "1.0.0",
+        "LSMinimumSystemVersion": "12.0",
+        "LSUIElement": True,  # tray-only app, no Dock icon
+        "NSHighResolutionCapable": True,
+    },
 )

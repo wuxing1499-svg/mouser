@@ -27,7 +27,13 @@ if "distpath" not in CONF:
 from PyInstaller.building.build_main import Analysis, COLLECT, EXE
 from PyInstaller.utils.hooks import collect_data_files
 
-REPO_ROOT = Path(SPECPATH).resolve() if "SPECPATH" in dir() else Path(__file__).resolve().parent.parent
+# SPECPATH is the spec file's directory (packaging/), so parent is repo root.
+# When loaded via runpy for tests (no SPECPATH), fall back to __file__.
+REPO_ROOT = (
+    Path(SPECPATH).resolve().parent
+    if "SPECPATH" in dir()
+    else Path(__file__).resolve().parent.parent
+)
 
 # Locate the deskflow-core.exe binary.
 BINARY_CANDIDATES = [

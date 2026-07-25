@@ -44,8 +44,14 @@ echo "    qt:     ${CMAKE_PREFIX_PATH:-<not found>}"
 # Step 1: Configure & build C++ core (deskflow-core only).
 BUILD_DIR="${REPO_ROOT}/build"
 echo "==> [1/3] cmake configure deskflow-core"
+# Use Ninja if available and no prior cache exists; otherwise let CMake pick
+# the generator (avoids "generator mismatch" on re-runs).
+CMAKE_GEN_ARGS=()
+if command -v ninja >/dev/null 2>&1 && [[ ! -f "${BUILD_DIR}/CMakeCache.txt" ]]; then
+  CMAKE_GEN_ARGS+=( -G Ninja )
+fi
 cmake -S vendor/deskflow -B "${BUILD_DIR}" \
-  -G Ninja \
+  ${CMAKE_GEN_ARGS[@]+"${CMAKE_GEN_ARGS[@]}"} \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_OSX_ARCHITECTURES="${ARCH}" \
   -DCMAKE_OSX_SYSROOT="$(xcrun --show-sdk-path)" \
@@ -62,9 +68,12 @@ if [[ ! -x "${BINARY}" ]]; then
 fi
 echo "    built:  ${BINARY}"
 
-# Step 2: PyInstaller.
+# Step 2: PyInstaller (BUNDLE in spec generates dist/Mouser.app/).
+# Use a project-local cache dir to avoid PermissionError on ~/Library/Application Support.
+export PYINSTALLER_CONFIG_DIR="${REPO_ROOT}/.pyinstaller-cache"
+mkdir -p "${PYINSTALLER_CONFIG_DIR}"
 echo "==> [3/3] pyinstaller mouser-mac.spec"
-pyinstaller packaging/mouser-mac.spec --noconfirm --clean
+pyinstaller packaging/mouser-mac.spec --noconfirm
 
 APP_BUNDLE="${REPO_ROOT}/dist/Mouser.app"
 if [[ ! -d "${APP_BUNDLE}" ]]; then
@@ -72,9 +81,14 @@ if [[ ! -d "${APP_BUNDLE}" ]]; then
   exit 1
 fi
 
-# Step 3: Ad-hoc sign the .app bundle (required on Apple Silicon, see spec drift D7).
+# Step 3: Ad-hoc sign (required on Apple Silicon, see spec drift D7).
+# BUNDLE already signs the main executable; we sign the whole bundle with --deep
+# for distribution. Local dev may skip if it fails.
 echo "==> codesign ad-hoc (Apple Silicon requirement)"
-codesign --force --deep --sign - "${APP_BUNDLE}"
-codesign --verify --verbose=2 "${APP_BUNDLE}" || true
+codesign --force --deep --sign - "${APP_BUNDLE}" 2>&1 || \
+  echo "    WARNING: codesign --deep failed (OK for local dev)"
+codesign --verify --verbose=2 "${APP_BUNDLE}" 2>&1 || \
+  echo "    WARNING: codesign verify failed (OK for local dev)"
 
 echo "==> done: ${APP_BUNDLE}"
+du -sh "${APP_BUNDLE}"

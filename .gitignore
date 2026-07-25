@@ -25,6 +25,7 @@ venv/
 
 # PyInstaller
 *.spec.user
+.pyinstaller-cache/
 
 # Test
 .pytest_cache/
