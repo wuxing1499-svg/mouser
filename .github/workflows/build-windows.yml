@@ -1,0 +1,78 @@
+# Build Mouser for Windows (x86_64).
+# Source: plan/mouser 阶段 7 step 36
+#
+# Produces a portable zip artifact: Mouser-windows-x86_64.zip
+#
+# Note: v1 does NOT ship an MSI installer (would require WiX + EV cert).
+# Users get a portable zip they extract and double-click Mouser.exe.
+
+name: build-windows
+
+on:
+  push:
+    branches: [main, master]
+    tags: ['v*']
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 1
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: requirements-build.txt
+
+      - name: Install Qt 6.7
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.7.3'
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_msvc2022_64'
+          modules: 'qtcore qtgui qtwidgets qtnetwork'
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Install Ninja & CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-build.txt
+
+      - name: Build C++ core + PyInstaller onedir
+        env:
+          CMAKE_PREFIX_PATH: ${{ env.QT_ROOT_DIR }}
+        run: .\packaging\build.ps1 -QtPath $env:QT_ROOT_DIR
+
+      - name: Compress-Archive (portable zip)
+        run: |
+          Compress-Archive -Path dist\Mouser\* -DestinationPath dist\Mouser-windows-x86_64.zip -Force
+          Get-Item dist\Mouser-windows-x86_64.zip | Select-Object Name,Length
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mouser-windows-x86_64
+          path: dist/Mouser-windows-x86_64.zip
+          if-no-files-found: error
+          retention-days: 14

@@ -57,9 +57,7 @@ def test_schema_includes_all_required_message_types(schema: dict) -> None:
 def test_each_message_has_fields_definition(schema: dict) -> None:
     """Each message type declares its fields (may be empty dict)."""
     for msg_type, definition in schema["messages"].items():
-        assert "fields" in definition, (
-            f"Message type {msg_type!r} missing 'fields' key"
-        )
+        assert "fields" in definition, f"Message type {msg_type!r} missing 'fields' key"
         assert isinstance(definition["fields"], dict), (
             f"Message type {msg_type!r} 'fields' must be a dict"
         )

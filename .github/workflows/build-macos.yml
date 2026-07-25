@@ -1,0 +1,87 @@
+# Build Mouser for macOS (arm64 + x86_64).
+# Source: plan/mouser 阶段 7 step 35
+#
+# Produces two ad-hoc signed DMG artifacts:
+#   - Mouser-macos-arm64.dmg   (from macos-14 runner)
+#   - Mouser-macos-x86_64.dmg  (from macos-13 runner)
+
+name: build-macos
+
+on:
+  push:
+    branches: [main, master]
+    tags: ['v*']
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build (${{ matrix.runner }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # macos-14 = Apple Silicon (arm64); macos-13 = Intel (x86_64).
+        # See spec drift D8: PyInstaller cannot build universal2, so we ship two.
+        include:
+          - runner: macos-14
+            arch: arm64
+            artifact-suffix: arm64
+          - runner: macos-13
+            arch: x86_64
+            artifact-suffix: x86_64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 1
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: requirements-build.txt
+
+      - name: Install Homebrew build deps
+        run: |
+          brew install qt cmake ninja ccache
+          echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> "$GITHUB_ENV"
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-build.txt
+
+      - name: Build C++ core + PyInstaller .app
+        run: ./packaging/build.sh ${{ matrix.arch }}
+
+      - name: Ad-hoc sign .app (Apple Silicon requirement, spec drift D7)
+        run: |
+          codesign --force --deep --sign - dist/Mouser.app
+          codesign --verify --verbose=2 dist/Mouser.app
+
+      - name: Create DMG
+        run: |
+          # Create a read-only DMG from Mouser.app for distribution.
+          hdiutil create -volname "Mouser" -srcfolder dist/Mouser.app \
+            -ov -format UDZO "dist/Mouser-macos-${{ matrix.artifact-suffix }}.dmg"
+
+      - name: Verify DMG
+        run: |
+          ls -lh "dist/Mouser-macos-${{ matrix.artifact-suffix }}.dmg"
+          hdiutil verify "dist/Mouser-macos-${{ matrix.artifact-suffix }}.dmg"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mouser-macos-${{ matrix.artifact-suffix }}
+          path: dist/Mouser-macos-${{ matrix.artifact-suffix }}.dmg
+          if-no-files-found: error
+          retention-days: 14

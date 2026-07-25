@@ -104,9 +104,7 @@ class MouserTray(QObject):
         self._act_start = QAction("Start", menu)
         self._act_stop = QAction("Stop", menu)
         self._act_restart = QAction("Restart daemon", menu)
-        self._act_start.triggered.connect(
-            lambda: self.start_requested.emit(self._mode)
-        )
+        self._act_start.triggered.connect(lambda: self.start_requested.emit(self._mode))
         self._act_stop.triggered.connect(self.stop_requested.emit)
         self._act_restart.triggered.connect(self.restart_requested.emit)
         menu.addAction(self._act_start)
@@ -161,7 +159,9 @@ class MouserTray(QObject):
         if detail:
             tooltip += f" ({detail})"
         self._tray.setToolTip(tooltip)
-        self._act_status.setText(f"Status: {state}" + (f" — {detail}" if detail else ""))
+        self._act_status.setText(
+            f"Status: {state}" + (f" — {detail}" if detail else "")
+        )
         self._refresh_actions()
 
     def show_message(self, title: str, body: str) -> None:

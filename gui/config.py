@@ -28,9 +28,7 @@ class ScreenConfig:
     def __post_init__(self) -> None:
         valid: tuple[str, ...] = ("left", "right", "top", "bottom")
         if self.position not in valid:
-            raise ValueError(
-                f"position must be one of {valid}, got {self.position!r}"
-            )
+            raise ValueError(f"position must be one of {valid}, got {self.position!r}")
 
 
 @dataclass

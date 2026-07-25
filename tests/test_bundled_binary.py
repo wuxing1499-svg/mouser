@@ -24,8 +24,10 @@ def test_dev_mode_returns_path_next_to_package(tmp_path: Path) -> None:
     if sys.platform != "win32":
         binary.chmod(0o755)
 
-    with mock.patch.object(sys, "_MEIPASS", None, create=True), \
-         mock.patch.object(Path, "cwd", return_value=tmp_path):
+    with (
+        mock.patch.object(sys, "_MEIPASS", None, create=True),
+        mock.patch.object(Path, "cwd", return_value=tmp_path),
+    ):
         # On non-Windows, also patch the platform check to avoid chmod on fake binary
         result = bundled_binary("deskflow-core")
 

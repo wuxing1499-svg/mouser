@@ -59,11 +59,7 @@ def test_deserialize_skips_blank_lines() -> None:
 
 def test_deserialize_skips_malformed_lines() -> None:
     """Malformed JSON lines are skipped (not crash), valid lines still yielded."""
-    stream = io.StringIO(
-        '{"type":"Hello"}\n'
-        'this is not json\n'
-        '{"type":"Pong"}\n'
-    )
+    stream = io.StringIO('{"type":"Hello"}\nthis is not json\n{"type":"Pong"}\n')
 
     msgs = list(deserialize_ndjson_stream(stream))
 

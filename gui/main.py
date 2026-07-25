@@ -70,9 +70,7 @@ def _build_start_config_message(cfg: MouserConfig) -> dict:
         "config": {
             "port": cfg.port,
             "local_host": cfg.local_host,
-            "screens": [
-                {"host": s.host, "position": s.position} for s in cfg.screens
-            ],
+            "screens": [{"host": s.host, "position": s.position} for s in cfg.screens],
         },
     }
 
@@ -212,9 +210,7 @@ class MouserApp:
             elif state == "disconnected":
                 self._tray.set_state(TrayState.DISCONNECTED, detail)
         elif t == "Error":
-            self._tray.set_state(
-                TrayState.ERROR, msg.get("message", "unknown error")
-            )
+            self._tray.set_state(TrayState.ERROR, msg.get("message", "unknown error"))
             self._tray.show_message(
                 "Mouser error", msg.get("message", "Daemon reported an error")
             )

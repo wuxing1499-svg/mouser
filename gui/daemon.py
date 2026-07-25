@@ -66,9 +66,7 @@ class DaemonProcess:
         }
         # On Windows, suppress the console window for GUI integration.
         if sys.platform == "win32":
-            kwargs["creationflags"] = getattr(
-                subprocess, "CREATE_NO_WINDOW", 0
-            )
+            kwargs["creationflags"] = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 
         self._proc = subprocess.Popen(argv, **kwargs)
 
