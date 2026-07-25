@@ -34,6 +34,7 @@ jobs:
           fetch-depth: 1
 
       - name: Fetch submodules (full)
+        shell: pwsh
         run: |
           # Full clone (no --depth) so the pinned deskflow commit can be
           # checked out even if GitHub upload-pack rejects direct fetch.
@@ -43,7 +44,16 @@ jobs:
           git clone https://github.com/deskflow/deskflow.git vendor/deskflow
           # Extract pinned commit from `git submodule status` output:
           #   " e1e22c8916f59a158c818d88a2cfb00139e11573 vendor/deskflow (v1.26.0-2-ge1e22c891)"
-          $pinned = (git submodule status vendor/deskflow)[0].Split(' ')[1]
+          # NOTE: In pwsh, `(git ...)[0]` on a single-line string returns a
+          # Char (not the line), so we use `Select-Object -First 1` instead.
+          $statusLine = git submodule status vendor/deskflow | Select-Object -First 1
+          Write-Host "Submodule status: $statusLine"
+          $parts = $statusLine -split '\s+'
+          $pinned = $parts[1]
+          if (-not $pinned -or $pinned -notmatch '^[0-9a-f]{7,40}$') {
+            Write-Error "Failed to extract pinned commit from: $statusLine"
+            exit 1
+          }
           Write-Host "Checking out deskflow @ $pinned"
           git -C vendor/deskflow checkout $pinned
 
