@@ -39,8 +39,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          submodules: recursive
+          # Do not let actions/checkout fetch submodules with --depth=1: the
+          # pinned deskflow commit may not be a branch tip, so shallow fetch
+          # fails with "not our ref". We fetch submodules separately below.
+          submodules: false
           fetch-depth: 1
+
+      - name: Fetch submodules (full)
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --recursive
 
       - name: Setup Python 3.12
         uses: actions/setup-python@v5
